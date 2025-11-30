@@ -7,4 +7,8 @@
     <RootNamespace>kasir_kafe</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MySqlConnector" Version="2.5.0" />
+  </ItemGroup>
+
 </Project>
