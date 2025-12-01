@@ -1,0 +1,6 @@
+*.obj
+*.log
+*.bin
+node_modules/
+bin/
+obj/
