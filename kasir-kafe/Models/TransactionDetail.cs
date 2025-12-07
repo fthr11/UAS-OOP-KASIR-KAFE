@@ -1,3 +1,5 @@
+namespace kasirkafe.Models;
+
 public class TransactionDetail
 {
     public int TransactionDetailId { get; set; }

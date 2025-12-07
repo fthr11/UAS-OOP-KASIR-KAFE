@@ -1,3 +1,5 @@
+namespace kasirkafe.Models;
+
 public class TransactionViewModel
 {
     public List<Product> AvailableProducts { get; set; } = new();

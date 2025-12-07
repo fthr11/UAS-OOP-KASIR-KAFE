@@ -1,3 +1,5 @@
+namespace kasirkafe.ViewModels;
+
 using System.ComponentModel.DataAnnotations;
 
 public class LoginViewModel
