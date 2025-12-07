@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace kasir_kafe.Controllers;   // <-- sesuaikan dengan nama namespace di HomeController
+namespace kasir_kafe.Controllers;
 
 public class AuthController : Controller
 {
