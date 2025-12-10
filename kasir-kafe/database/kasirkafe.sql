@@ -77,6 +77,7 @@ CREATE TABLE `transactions` (
 CREATE TABLE `users` (
   `UserId` int(11) NOT NULL,
   `Username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  'Email' varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `FullName` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Role` enum('Admin','Kasir') COLLATE utf8mb4_unicode_ci NOT NULL,
