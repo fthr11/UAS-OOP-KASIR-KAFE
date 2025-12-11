@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("kasir-kafe")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8363f217351cbf5054c143372032a5b62a742552")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+40dfef2dc23b246ef860866cb2529881b1ee02fd")]
 [assembly: System.Reflection.AssemblyProductAttribute("kasir-kafe")]
 [assembly: System.Reflection.AssemblyTitleAttribute("kasir-kafe")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
