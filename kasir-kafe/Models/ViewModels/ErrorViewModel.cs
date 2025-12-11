@@ -1,4 +1,4 @@
-namespace kasir_kafe.Models;
+namespace kasirkafe.ViewModels;
 
 public class ErrorViewModel
 {

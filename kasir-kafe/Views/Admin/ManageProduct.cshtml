@@ -1,0 +1,40 @@
+@model IEnumerable<kasirkafe.Models.Product>
+
+@{
+    ViewData["Title"] = "Admin Page";
+}
+
+<h2>Kelola Produk</h2>
+
+<a class="btn btn-success mb-3" asp-action="CreateProduct">+ Tambah Produk</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nama Produk</th>
+            <th>Harga</th>
+            <th>Kategori</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductId</td>
+                <td>@item.ProductName</td>
+                <td>@item.Price</td>
+                <td>@item.Category</td>
+                <td>
+                    <a asp-action="EditProduct" asp-route-id="@item.ProductId" class="btn btn-warning btn-sm">Edit</a>
+                    <a asp-action="DeleteProduct" asp-route-id="@item.ProductId" 
+                        onclick="return confirm('Yakin ingin hapus?')" class="btn btn-danger btn-sm">
+                        Hapus
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
