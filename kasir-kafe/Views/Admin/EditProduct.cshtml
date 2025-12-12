@@ -6,13 +6,25 @@
 
 <h2>Edit Produk</h2>
 
-<form asp-action="EditProduct" method="post">
+<form asp-action="EditProduct" method="post"  enctype="multipart/form-data">
     <input type="hidden" asp-for="ProductId" />
 
     <div class="form-group">
         <label>Nama Produk</label>
         <input asp-for="ProductName" class="form-control" />
         <span asp-validation-for="ProductName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Gambar Produk</label>
+        <input asp-for="ImageFile" class="form" type="file" accept="image/*" />
+
+        @if (!string.IsNullOrEmpty(Model.Image))
+        {
+            <img src="@Model.Image" alt="Preview" width="100" height="100" style="object-fit: cover; display: block; margin-top: 10px;" />
+        }
+
+        <span asp-validation-for="ImageFile" class="text-danger"></span>
     </div>
 
     <div class="form-group">

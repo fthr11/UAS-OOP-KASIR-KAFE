@@ -31,6 +31,7 @@ CREATE TABLE `products` (
   `ProductId` int(11) NOT NULL,
   `ProductName` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `Price` decimal(18,2) NOT NULL,
   `Stock` int(11) NOT NULL DEFAULT 0,
   `IsActive` tinyint(1) NOT NULL DEFAULT 1,

@@ -13,6 +13,7 @@
         <tr>
             <th>ID</th>
             <th>Nama Produk</th>
+            <th>Gambar</th>
             <th>Harga</th>
             <th>Kategori</th>
             <th>Aksi</th>
@@ -24,6 +25,9 @@
             <tr>
                 <td>@item.ProductId</td>
                 <td>@item.ProductName</td>
+                <td>
+                    <img src="@item.Image" width="80" height="80" style="object-fit: cover;" />
+                </td>
                 <td>@item.Price</td>
                 <td>@item.Category</td>
                 <td>
