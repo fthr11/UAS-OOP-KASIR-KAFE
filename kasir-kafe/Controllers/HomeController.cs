@@ -1,31 +1,45 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using kasirkafe.ViewModels;
+using kasirkafe.Data;
+using kasirkafe.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace kasir_kafe.Controllers;
-
-public class HomeController : Controller
+namespace kasir_kafe.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    public class HomeController : Controller
     {
-        _logger = logger;
-    }
+        private readonly ILogger<HomeController> _logger;
+        private readonly CafeDbContext _context;
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+        public HomeController(ILogger<HomeController> logger, CafeDbContext context)
+        {
+            _logger = logger;
+            _context = context;
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        // === HALAMAN HOME / KASIR ===
+        public async Task<IActionResult> Index()
+        {
+            // Ambil semua produk aktif dengan stock > 0
+            var products = await _context.Products.ToListAsync();
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+
+            return View(products); // kirim ke Index.cshtml
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
+        }
     }
 }
