@@ -1,13 +1,19 @@
 @model kasirkafe.Models.Product
-
+@using kasirkafe.Models 
 @{
     ViewData["Title"] = "Edit Produk";
 }
 
-<h2>Edit Produk</h2>
+<h3>Edit Produk</h3>
+<hr/>
 
-<form asp-action="EditProduct" method="post"  enctype="multipart/form-data">
+<form asp-action="EditProduct" method="post" enctype="multipart/form-data">
+    
+    @* ID Produk (Wajib Ada) *@
     <input type="hidden" asp-for="ProductId" />
+    
+    @* Input Category tersembunyi, diisi berdasarkan tipe produk lama (untuk kebutuhan model binding/persistence) *@
+    <input asp-for="Category" type="hidden" id="categoryInput" />
 
     <div class="form-group">
         <label>Nama Produk</label>
@@ -17,11 +23,11 @@
 
     <div class="form-group">
         <label>Gambar Produk</label>
-        <input asp-for="ImageFile" class="form" type="file" accept="image/*" />
+        <input asp-for="ImageFile" class="form-control" type="file" accept="image/*" />
 
         @if (!string.IsNullOrEmpty(Model.Image))
         {
-            <img src="@Model.Image" alt="Preview" width="100" height="100" style="object-fit: cover; display: block; margin-top: 10px;" />
+            <img src="@Model.Image" alt="Preview" width="100" height="100" style="object-fit: cover; display: block; margin-top: 10px; border: 1px solid #ccc;" />
         }
 
         <span asp-validation-for="ImageFile" class="text-danger"></span>
@@ -29,16 +35,127 @@
 
     <div class="form-group">
         <label>Harga</label>
-        <input asp-for="Price" class="form-control" type="number" />
+        <input asp-for="Price" class="form-control" type="number" min="0" step="0.01" />
         <span asp-validation-for="Price" class="text-danger"></span>
     </div>
 
+    @*
+        CATATAN: Di Edit, Tipe Produk tidak perlu diubah.
+        Kita hanya menampilkan field spesifik berdasarkan TIPE MODEL saat ini.
+        Kontroler sudah menggunakan GetType().Name (diberikan via ViewBag) untuk menentukan tipe.
+    *@
     <div class="form-group">
-        <label>Kategori</label>
-        <input asp-for="Category" class="form-control" />
-        <span asp-validation-for="Category" class="text-danger"></span>
+        <label>Tipe Produk (Tidak dapat diubah)</label>
+        @* Menampilkan tipe produk saat ini (FoodProduct, DrinkProduct, atau Product) *@
+        <input type="text" class="form-control" value="@ViewBag.ProductType" readonly />
+    </div>
+
+    @* FIELD KHUSUS MAKANAN *@
+    <div class="form-group product-specific-field" id="jenisMakananField" style="display: none;">
+        <label>Jenis Makanan</label>
+        @* Gunakan nama parameter yang sama dengan di controller: jenisMakanan *@
+        <select name="jenisMakanan" class="form-control" id="foodTypeSelect"> 
+            <option value="">-- Pilih Jenis --</option>
+            <option value="Snack">Snack</option>
+            <option value="Makanan Berat">Makanan Berat</option>
+        </select>
+    </div>
+    
+    @* FIELD KHUSUS MINUMAN (Tambahan) *@
+    <div class="form-group product-specific-field" id="jenisMinumanField" style="display: none;">
+        <label>Jenis Minuman</label>
+        @* Gunakan nama parameter yang sama dengan di controller: jenisMinuman *@
+        <select name="jenisMinuman" class="form-control" id="drinkTypeSelect">
+            <option value="">-- Pilih Jenis --</option>
+            <option value="Kopi">Kopi</option>
+            <option value="Teh">Teh</option>
+        </select>
     </div>
 
     <button type="submit" class="btn btn-success mt-3">Update</button>
     <a asp-action="ManageProduct" class="btn btn-secondary mt-3">Kembali</a>
 </form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function initializeEditProductFields() {
+            // Ambil tipe produk dari ViewBag yang di-set di Controller
+            var selectedType = '@ViewBag.ProductType'; 
+            
+            // Ambil nilai khusus dari model
+            var currentJenisMakanan = '';
+            var currentJenisMinuman = '';
+            
+            // Cek jika Model adalah FoodProduct atau DrinkProduct
+            if (selectedType === 'FoodProduct') {
+                // Di sini Anda perlu memastikan Model Anda memiliki properti JenisMakanan/JenisMinuman.
+                // Karena Modelnya adalah Product (base class), Anda mungkin harus mengirimkan
+                // nilai spesifik ini melalui ViewBag/ViewData atau model turunan.
+                // Asumsi: Kita bisa mengaksesnya jika modelnya di-cast, atau menggunakan properti
+                // Category sebagai penanda utama, dan controller akan menangani sisanya.
+
+                // Untuk saat ini, kita akan fokus pada menampilkan field yang relevan.
+                document.getElementById('jenisMakananField').style.display = 'block';
+                document.getElementById('jenisMinumanField').style.display = 'none';
+
+                // Inisialisasi nilai saat ini (Menggunakan Category sebagai fallback untuk data spesifik)
+                // Idealnya, di controller Anda harus mengirimkan FoodProduct/DrinkProduct
+                // atau mengirimkan properti spesifik via ViewBag.
+                // Jika Anda tidak bisa mengakses properti turunan langsung di sini,
+                // gunakan Category sebagai nilai saat ini (jika Anda menyimpannya di Category)
+                // Jika tidak, Anda harus mengambil nilai ini dari Model/ViewBag:
+                
+                // ASUMSI: Kita mengambil nilai dari properti FoodProduct/DrinkProduct
+                // Jika properti di C# Model bernama 'JenisMakanan'
+                @if (Model is kasirkafe.Models.FoodProduct foodProduct)
+                {
+                    // Pastikan JenisMakanan tidak null sebelum mencoba menggunakannya
+                    <text>currentJenisMakanan = '@(foodProduct.JenisMakanan)';</text>
+                }
+
+                if (currentJenisMakanan) {
+                    document.getElementById('foodTypeSelect').value = currentJenisMakanan;
+                }
+                
+                // Set required
+                document.getElementById('foodTypeSelect').required = true;
+                document.getElementById('drinkTypeSelect').required = false;
+
+            } else if (selectedType === 'DrinkProduct') {
+                document.getElementById('jenisMakananField').style.display = 'none';
+                document.getElementById('jenisMinumanField').style.display = 'block';
+
+                @if (Model is kasirkafe.Models.DrinkProduct drinkProduct)
+                {
+                    // Pastikan JenisMinuman tidak null sebelum mencoba menggunakannya
+                    <text>currentJenisMinuman = '@(drinkProduct.JenisMinuman)';</text>
+                }
+                
+                if (currentJenisMinuman) {
+                    document.getElementById('drinkTypeSelect').value = currentJenisMinuman;
+                }
+
+                // Set required
+                document.getElementById('foodTypeSelect').required = false;
+                document.getElementById('drinkTypeSelect').required = true;
+                
+            } else {
+                // Product Umum
+                document.getElementById('jenisMakananField').style.display = 'none';
+                document.getElementById('jenisMinumanField').style.display = 'none';
+                
+                document.getElementById('foodTypeSelect').required = false;
+                document.getElementById('drinkTypeSelect').required = false;
+            }
+            
+            // Set input Category sesuai dengan tipe model saat ini
+            document.getElementById('categoryInput').value = selectedType;
+        }
+
+        // Panggil fungsi saat dokumen siap
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEditProductFields();
+        });
+    </script>
+}

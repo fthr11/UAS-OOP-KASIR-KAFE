@@ -7,9 +7,11 @@
 <h2>Tambah Produk</h2>
 
 <form asp-action="CreateProduct" method="post" enctype="multipart/form-data">
+    
     <div class="form-group">
         <label>Nama Produk</label>
         <input asp-for="ProductName" class="form-control" />
+        <span asp-validation-for="ProductName" class="text-danger"></span>
     </div>
 
     <div class="form-group">
@@ -20,15 +22,77 @@
 
     <div class="form-group">
         <label>Harga</label>
-        <input asp-for="Price" class="form-control" type="number" />
+        <input asp-for="Price" class="form-control" type="number" min="0" step="0.01" />
+        <span asp-validation-for="Price" class="text-danger"></span>
     </div>
 
+    @* INPUT KATEGORI TERSEMBUNYI, AKAN DIISI OLEH JAVASCRIPT SESUAI PILIHAN TIPE PRODUK *@
+    <input asp-for="Category" type="hidden" id="categoryInput" />
+
     <div class="form-group">
-        <label>Kategori</label>
-        <input asp-for="Category" class="form-control" />
+        <label>Tipe Produk</label>
+        <select class="form-control" name="productType" id="productTypeSelect" onchange="toggleProductFields()">
+            <option value="Product">Produk Umum</option>
+            <option value="FoodProduct">Makanan</option>
+            <option value="DrinkProduct">Minuman</option>
+        </select>
+    </div>
+    
+    @* FIELD KHUSUS MAKANAN *@
+    <div class="form-group product-specific-field" id="jenisMakananField" style="display: none;">
+        <label>Jenis Makanan</label>
+        @* Menggunakan name yang sinkron dengan properti di FoodProduct (walaupun Anda harus merevisinya di C#)*@
+        <select name="jenisMakanan" class="form-control" id="foodTypeSelect"> 
+            <option value="">-- Pilih Jenis --</option>
+            <option value="Snack">Snack</option>
+            <option value="Makanan Berat">Makanan Berat</option>
+        </select>
+    </div>
+    
+    @* FIELD KHUSUS MINUMAN *@
+    <div class="form-group product-specific-field" id="jenisMinumanField" style="display: none;">
+        <label>Jenis Minuman</label>
+        @* Menggunakan name yang sinkron dengan properti di DrinkProduct (walaupun Anda harus merevisinya di C#)*@
+        <select name="jenisMinuman" class="form-control" id="drinkTypeSelect">
+            <option value="">-- Pilih Jenis --</option>
+            <option value="Kopi">Kopi</option>
+            <option value="Teh">Teh</option>
+        </select>
     </div>
 
     <button type="submit" class="btn btn-primary mt-3">Simpan</button>
     <a asp-action="ManageProduct" class="btn btn-secondary mt-3">Kembali</a>
 </form>
 
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function toggleProductFields() {
+            var selectedType = document.getElementById('productTypeSelect').value;
+            
+            // 1. Mengatur Kategori (untuk properti Category di Model Product)
+            // Ini penting untuk Single Table Inheritance (STI)
+            document.getElementById('categoryInput').value = selectedType;
+
+            // 2. Mengatur Tampilan Field Spesifik
+            var isFood = (selectedType === 'FoodProduct');
+            var isDrink = (selectedType === 'DrinkProduct');
+
+            var foodField = document.getElementById('jenisMakananField');
+            var drinkField = document.getElementById('jenisMinumanField');
+            
+            foodField.style.display = isFood ? 'block' : 'none';
+            drinkField.style.display = isDrink ? 'block' : 'none';
+
+            // 3. Mengatur Atribut 'required' agar validasi berfungsi dengan benar
+            // Ketika field tidak tampil, required dihilangkan agar form bisa disubmit
+            document.getElementById('foodTypeSelect').required = isFood;
+            document.getElementById('drinkTypeSelect').required = isDrink;
+        }
+
+        // Panggil fungsi saat dokumen siap untuk mengatur tampilan awal
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleProductFields();
+        });
+    </script>
+}

@@ -24,9 +24,32 @@ namespace kasirkafe.Data
                 .Property(p => p.Price)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<FoodProduct>()
+                .Property(f => f.JenisMakanan)
+                .HasMaxLength(50);
+            
+            modelBuilder.Entity<DrinkProduct>()
+                .Property(d => d.JenisMinuman)
+                .HasMaxLength(50);
+
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.TotalAmount)
                 .HasPrecision(18, 2);
+                
+
+            // SEEDER ADMIN
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    UserId = 1,
+                    Username = "admin",
+                    FullName = "Administrator",
+                    Email = "admin@kafe.com",
+                    Password = "admin123",     
+                    Role = "Admin",
+                    CreatedAt = DateTime.Now
+                }
+            );
         }
     }
 }

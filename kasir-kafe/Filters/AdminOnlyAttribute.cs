@@ -11,7 +11,7 @@ namespace kasirkafe.Filters
 
             if (role != "Admin")
             {
-                context.Result = new RedirectToActionResult("Login", "Auth", null);
+                context.Result = new RedirectToActionResult("Home", "Index", null);
             }
         }
     }

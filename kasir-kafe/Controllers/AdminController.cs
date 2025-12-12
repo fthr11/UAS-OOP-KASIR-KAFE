@@ -1,139 +1,186 @@
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc; 
 using kasirkafe.Filters;
-using kasirkafe.Models;
-using kasirkafe.Models.Interfaces;
+using kasirkafe.Models; 
+using kasirkafe.Models.Interfaces; 
 
-namespace kasir_kafe.Controllers
+namespace kasir_kafe.Controllers 
 {   
-    [AdminOnly]
-    public class AdminController : Controller
+    [AdminOnly] // Hanya bisa diakses admin
+    public class AdminController : Controller // Mendefinisikan kelas controller yang mewarisi dari Controller
     {
-        private readonly IRepository<Product> _productRepo; // Repository untuk Product
-        private readonly IWebHostEnvironment _webHost; // Untuk akses folder wwwroot
-    
-        public AdminController(IRepository<Product> productRepo, IWebHostEnvironment webHost)
+        private readonly IRepository<Product> _productRepo; // field private untuk repository produk
+        private readonly IWebHostEnvironment _webHost; // field private untuk mengakses wwwroot
+        
+        public AdminController(IRepository<Product> productRepo, IWebHostEnvironment webHost) // Constructor AdminController
         {
-            _productRepo = productRepo;
-            _webHost = webHost;
+            _productRepo = productRepo; // Inisialisasi IRepository untuk Product
+            _webHost = webHost; // Inisialisasi IWebHostEnvironment untuk akses ke wwwroot
+        }
+        
+        // Halaman Admin (Action Method)
+        public IActionResult Index() 
+        {
+            return View(); 
         }
 
-        public IActionResult Index()
-        {   
-            return View();
+        // Menampilkan daftar produk (Action Method)
+        public IActionResult ManageProduct() 
+        {
+            var products = _productRepo.GetAll(); // GetAll digunakan untuk menampilkan semua data produk
+            return View(products); 
         }
 
-        public IActionResult ManageProduct()
+        // Menampilkan form CreateProduct (Action Method - GET)
+        public IActionResult CreateProduct(string? type = "Product") // Parameter type untuk menentukan jenis produk 
         {
-            var products = _productRepo.GetAll();
-            return View(products);
+            ViewBag.ProductType = type; // ViewBag digunakan untuk mengirim tipe produk ke View
+            return View(); // Mengembalikan View (CreateProduct.cshtml)
         }
-
-        public IActionResult CreateProduct()
+        
+        [HttpPost] // Atribut untuk menangani request HTTP POST
+        public async Task<IActionResult> CreateProduct(string productType, Product product, string? jenisMakanan, string? jenisMinuman) // Action method POST untuk membuat produk
         {
-            return View();
-        }
+            if (!ModelState.IsValid) // Memeriksa apakah data model yang di-bind valid berdasarkan data model
+                return View(product); // Jika tidak valid, kembalikan View dengan data yang tidak valid
 
-        [HttpPost]
-        public async Task<IActionResult> CreateProduct(Product product)
-        {
-            if (!ModelState.IsValid)
-                return View(product);
+            // Buat instance sesuai tipe
+            Product newProduct; // Deklarasi variabel untuk produk baru
 
-            // Upload gambar
-            if (product.ImageFile != null)
+            // Validasi tipe produk dan buat instance yang sesuai
+            if (productType == "FoodProduct")
             {
-                string uploadsFolder = Path.Combine(_webHost.WebRootPath, "images/products");
-                Directory.CreateDirectory(uploadsFolder); // Buat folder jika belum ada
-                
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + product.ImageFile.FileName;
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                newProduct = new FoodProduct 
                 {
-                    await product.ImageFile.CopyToAsync(fileStream);
-                }
-                
-                product.Image = "/images/products/" + uniqueFileName;
+                    ProductName = product.ProductName, 
+                    Category = product.Category, 
+                    Price = product.Price, 
+                    CreatedAt = DateTime.Now, 
+                    JenisMakanan = jenisMakanan // Mengatur properti spesifik FoodProduct
+                };
+            }
+            else if (productType == "DrinkProduct") 
+            {
+                newProduct = new DrinkProduct 
+                {
+                    ProductName = product.ProductName, 
+                    Category = product.Category, 
+                    Price = product.Price, 
+                    CreatedAt = DateTime.Now, 
+                    JenisMinuman = jenisMinuman // Mengatur properti spesifik DrinkProduct
+                };
+            }
+            else
+            {
+                newProduct = product; // Menggunakan instance Product yang telah dibuat
+                newProduct.CreatedAt = DateTime.Now; 
             }
 
-            _productRepo.Add(product);
-            _productRepo.Save();
-            return RedirectToAction("ManageProduct");
+            // Upload gambar
+            if (product.ImageFile != null) // Memeriksa apakah ada file gambar yang diupload
+            {
+                string uploadsFolder = Path.Combine(_webHost.WebRootPath, "images/products"); // Menentukan path folder upload di wwwroot
+                Directory.CreateDirectory(uploadsFolder); // kalau folder belum dibuat maka akan otomatis terbuat jika kita mengupload gambar
+                
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + product.ImageFile.FileName; // untuk membuat nama file yang berbeda dan auto generate
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName); // Menggabungkan path folder dan nama file
+                
+                using (var fileStream = new FileStream(filePath, FileMode.Create)) // Membuat FileStream untuk menulis file
+                {
+                    await product.ImageFile.CopyToAsync(fileStream); // Menyalin konten file yang diupload 
+                }
+                
+                newProduct.Image = "/images/products/" + uniqueFileName; // Menyimpan path gambar local 
+            }
+
+            _productRepo.Add(newProduct); // Menambahkan produk baru ke repository
+            _productRepo.Save(); // Menyimpan perubahan ke database
+            return RedirectToAction("ManageProduct"); 
+        }
+        
+        // Action method untuk menampilkan form edit produk
+        public IActionResult EditProduct(int id) 
+        {
+            var product = _productRepo.GetById(id); // Mengambil produk berdasarkan ID
+            if (product == null) return NotFound(); // Jika produk tidak ditemukan, kembalikan NotFound (HTTP 404)
+
+            // Pass tipe product ke view
+            ViewBag.ProductType = product.GetType().Name; // Menyimpan nama tipe produk ke ViewBag
+            return View(product); // Mengirim produk ke View (EditProduct.cshtml)
         }
 
-        public IActionResult EditProduct(int id)
+        [HttpPost] // Atribut untuk menangani request HTTP POST
+        public async Task<IActionResult> EditProduct(Product product, string? jenisMakanan, string? jenisMinuman) 
         {
-            var product = _productRepo.GetById(id);
-            if (product == null) return NotFound();
-            return View(product);
-        }
+            if (!ModelState.IsValid) // Memeriksa validitas model
+                return View(product); // Jika tidak valid, kembalikan View
 
-        [HttpPost]
-        public async Task<IActionResult> EditProduct(Product product)
-        {
-            if (!ModelState.IsValid)
-                return View(product);
-
-            // Ambil data lama dari database 
-            var oldProduct = _productRepo.GetById(product.ProductId);
+            var oldProduct = _productRepo.GetById(product.ProductId); // Mengambil produk yang sudah ada dari repository
             if (oldProduct == null)
-                return NotFound();
+                return NotFound(); // Jika produk tidak ditemukan, kembalikan NotFound
 
-            // Update field biasa
-            oldProduct.ProductName = product.ProductName;
-            oldProduct.Price = product.Price;
-            oldProduct.Category = product.Category;
+            // untuk update properties umum
+            oldProduct.ProductName = product.ProductName; // Memperbarui nama produk
+            oldProduct.Price = product.Price; // Memperbarui harga
+            oldProduct.Category = product.Category; // Memperbarui kategori
+
+            // untuk mengpdate properties khusus 
+            if (oldProduct is FoodProduct foodProduct) // Memeriksa apakah produk adalah FoodProduct
+            {
+                foodProduct.JenisMakanan = jenisMakanan; // Memperbarui properti spesifik FoodProduct
+            }
+            else if (oldProduct is DrinkProduct drinkProduct) // Memeriksa apakah produk adalah DrinkProduct
+            {
+                drinkProduct.JenisMinuman = jenisMinuman; // Memperbarui properti spesifik DrinkProduct
+            }
 
             // Jika gambar baru diupload
-            if (product.ImageFile != null)
+            if (product.ImageFile != null) // Memeriksa apakah ada file gambar baru yang diupload
             {
                 // Hapus gambar lama
-                if (!string.IsNullOrEmpty(oldProduct.Image))
+                if (!string.IsNullOrEmpty(oldProduct.Image)) // Memeriksa apakah ada path gambar lama
                 {
-                    string oldImagePath = Path.Combine(_webHost.WebRootPath, oldProduct.Image.TrimStart('/'));
-                    if (System.IO.File.Exists(oldImagePath))
+                    string oldImagePath = Path.Combine(_webHost.WebRootPath, oldProduct.Image.TrimStart('/')); // Mendapatkan path fisik gambar lama
+                    if (System.IO.File.Exists(oldImagePath)) // Memeriksa apakah file gambar lama ada
                     {
-                        System.IO.File.Delete(oldImagePath);
+                        System.IO.File.Delete(oldImagePath); // Menghapus file gambar lama
                     }
                 }
 
-                // Upload gambar baru
-                string uploadsFolder = Path.Combine(_webHost.WebRootPath, "images/products");
-                Directory.CreateDirectory(uploadsFolder);
+                // Upload gambar baru (prosesnya sama seperti di CreateProduct)
+                string uploadsFolder = Path.Combine(_webHost.WebRootPath, "images/products"); // Menentukan path folder upload
+                Directory.CreateDirectory(uploadsFolder); // Membuat folder jika belum ada
 
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + product.ImageFile.FileName;
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + product.ImageFile.FileName; // Membuat nama file unik
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName); // Menggabungkan path folder dan nama file
 
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                using (var fileStream = new FileStream(filePath, FileMode.Create)) // Membuat FileStream
                 {
-                    await product.ImageFile.CopyToAsync(fileStream);
+                    await product.ImageFile.CopyToAsync(fileStream); // Menyalin file baru
                 }
 
-                oldProduct.Image = "/images/products/" + uniqueFileName;
+                oldProduct.Image = "/images/products/" + uniqueFileName; // Memperbarui path gambar relatif di model
             }
 
-            // Simpan perubahan 
-            _productRepo.Save();
-
-            return RedirectToAction("ManageProduct");
+            _productRepo.Save(); // Menyimpan perubahan ke database
+            return RedirectToAction("ManageProduct"); // Mengarahkan pengguna kembali
         }
 
+        // Action method untuk menghapus produk
         public IActionResult DeleteProduct(int id)
         {
-            // Hapus gambar dari folder
-            var product = _productRepo.GetById(id);
-            if (product != null && !string.IsNullOrEmpty(product.Image))
+            var product = _productRepo.GetById(id); // Mengambil produk berdasarkan ID
+            if (product != null && !string.IsNullOrEmpty(product.Image)) // Memeriksa jika produk ada dan memiliki gambar
             {
-                string imagePath = Path.Combine(_webHost.WebRootPath, product.Image.TrimStart('/'));
-                if (System.IO.File.Exists(imagePath))
+                string imagePath = Path.Combine(_webHost.WebRootPath, product.Image.TrimStart('/')); // Mendapatkan path fisik gambar
+                if (System.IO.File.Exists(imagePath)) // Memeriksa apakah file gambar ada
                 {
-                    System.IO.File.Delete(imagePath);
+                    System.IO.File.Delete(imagePath); // Menghapus file gambar
                 }
             }
 
-            _productRepo.Delete(id);
-            _productRepo.Save();
-            return RedirectToAction("ManageProduct");
+            _productRepo.Delete(id); // Menghapus produk dari repository
+            _productRepo.Save(); // Menyimpan perubahan ke database
+            return RedirectToAction("ManageProduct"); // Mengarahkan pengguna kembali
         }
     }
 }

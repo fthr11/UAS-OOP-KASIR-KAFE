@@ -28,14 +28,18 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `products` (
-  `ProductId` int(11) NOT NULL,
+  `ProductId` int(11) NOT NULL AUTO_INCREMENT,
   `ProductName` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `Image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `Price` decimal(18,2) NOT NULL,
-  `Stock` int(11) NOT NULL DEFAULT 0,
-  `IsActive` tinyint(1) NOT NULL DEFAULT 1,
-  `CreatedAt` datetime NOT NULL DEFAULT current_timestamp()
+  `CreatedAt` datetime NOT NULL DEFAULT current_timestamp(),
+  `Discriminator` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Product',
+  `JenisMakanan` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `JenisMinuman` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`ProductId`),
+  KEY `idx_discriminator` (`Discriminator`),
+  KEY `idx_category` (`Category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -45,12 +49,15 @@ CREATE TABLE `products` (
 --
 
 CREATE TABLE `transactiondetails` (
-  `TransactionDetailId` int(11) NOT NULL,
+  `TransactionDetailId` int(11) NOT NULL AUTO_INCREMENT,
   `TransactionId` int(11) NOT NULL,
   `ProductId` int(11) NOT NULL,
   `Quantity` int(11) NOT NULL,
   `UnitPrice` decimal(18,2) NOT NULL,
-  `Subtotal` decimal(18,2) NOT NULL
+  `Subtotal` decimal(18,2) NOT NULL,
+  PRIMARY KEY (`TransactionDetailId`),
+  KEY `idx_tdetail_transactionid` (`TransactionId`),
+  KEY `idx_tdetail_productid` (`ProductId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -60,13 +67,16 @@ CREATE TABLE `transactiondetails` (
 --
 
 CREATE TABLE `transactions` (
-  `TransactionId` int(11) NOT NULL,
+  `TransactionId` int(11) NOT NULL AUTO_INCREMENT,
   `TransactionCode` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `UserId` int(11) NOT NULL,
   `TotalAmount` decimal(18,2) NOT NULL,
   `PaymentAmount` decimal(18,2) NOT NULL,
   `ChangeAmount` decimal(18,2) NOT NULL,
-  `TransactionDate` datetime NOT NULL DEFAULT current_timestamp()
+  `TransactionDate` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`TransactionId`),
+  UNIQUE KEY `TransactionCode` (`TransactionCode`),
+  KEY `idx_transactions_userid` (`UserId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -76,47 +86,16 @@ CREATE TABLE `transactions` (
 --
 
 CREATE TABLE `users` (
-  `UserId` int(11) NOT NULL,
+  `UserId` int(11) NOT NULL AUTO_INCREMENT,
   `Username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `FullName` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Role` enum('Admin','Kasir') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `CreatedAt` datetime NOT NULL DEFAULT current_timestamp()
+  `CreatedAt` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`UserId`),
+  UNIQUE KEY `Username` (`Username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `products`
---
-ALTER TABLE `products`
-  ADD PRIMARY KEY (`ProductId`);
-
---
--- Indexes for table `transactiondetails`
---
-ALTER TABLE `transactiondetails`
-  ADD PRIMARY KEY (`TransactionDetailId`),
-  ADD KEY `idx_tdetail_transactionid` (`TransactionId`),
-  ADD KEY `idx_tdetail_productid` (`ProductId`);
-
---
--- Indexes for table `transactions`
---
-ALTER TABLE `transactions`
-  ADD PRIMARY KEY (`TransactionId`),
-  ADD UNIQUE KEY `TransactionCode` (`TransactionCode`),
-  ADD KEY `idx_transactions_userid` (`UserId`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`UserId`),
-  ADD UNIQUE KEY `Username` (`Username`);
 
 --
 -- AUTO_INCREMENT for dumped tables
