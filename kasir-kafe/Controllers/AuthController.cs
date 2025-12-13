@@ -10,10 +10,10 @@ public class AuthController : Controller
 {
     private readonly CafeDbContext _context;
 
-        public AuthController(CafeDbContext context)
-        {
-            _context = context;
-        }
+    public AuthController(CafeDbContext context)
+    {
+        _context = context;
+    }
 
     [HttpGet]
     public IActionResult Login()
@@ -25,8 +25,8 @@ public class AuthController : Controller
     [HttpPost]
     public IActionResult Login(string Email, string Password)
     {
-            var user = _context.Users
-            .FirstOrDefault(u => u.Email == Email && u.Password == Password);
+        var user = _context.Users
+        .FirstOrDefault(u => u.Email == Email && u.Password == Password);
 
         if (user == null)
         {
@@ -44,11 +44,11 @@ public class AuthController : Controller
             return RedirectToAction("Index", "Admin"); // halaman Admin
         else
             return RedirectToAction("Index", "Home");  // halaman Kasir/Home
-        }
+    }
 
-        [HttpGet]
-        public IActionResult Register()
-        {
+    [HttpGet]
+    public IActionResult Register()
+    {
         // ini akan me-render Views/Auth/Register.cshtml
         return View(); // otomatis mencari Register.cshtml sesuai nama method
     }
@@ -66,14 +66,20 @@ public class AuthController : Controller
         {
             Username = Name,     // dari input form
             FullName = Name,    // atau ambil dari input FullName
-            Email = Email,     
+            Email = Email,
             Password = Password, // dari input form
             Role = "Kasir",      // default role
             CreatedAt = DateTime.Now
         };
-    _context.Users.Add(newUser);
-    _context.SaveChanges();
+        _context.Users.Add(newUser);
+        _context.SaveChanges();
 
-    return RedirectToAction("Login");
+        return RedirectToAction("Login");
+    }
+    
+    public IActionResult Logout()
+    {
+        HttpContext.Session.Clear();
+        return RedirectToAction("Login");
     }
 }
