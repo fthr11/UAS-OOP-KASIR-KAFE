@@ -25,6 +25,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Kasir</a>
                         </li>
+
+                        @if (Context.Session.GetString("Role") == "Admin") // <-- DI SINI
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-area="" asp-controller="Admin" asp-action="Index">Admin Dashboard</a>
+                            </li>
+                        }
+                        
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Privacy">About Us</a>
                         </li>    
@@ -53,6 +61,7 @@
                 <li><hr class="dropdown-divider" /></li>
 
                 <li>
+                    
                     <form asp-controller="Auth" asp-action="Logout" method="post" class="px-3">
                         <button type="submit" class="btn btn-danger w-100">
                             Logout

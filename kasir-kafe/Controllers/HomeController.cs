@@ -92,10 +92,10 @@ namespace kasir_kafe.Controllers
         // KONFIRMASI PEMBAYARAN - FIXED VERSION
         // ===============================
         [HttpPost]
-        public async Task<IActionResult> ConfirmPayment(decimal paymentAmount,string? customerName)
+        public async Task<IActionResult> ConfirmPayment(decimal paymentAmount, string? customerName)
         {
             var cart = GetCart();
-            
+
             // Validasi cart tidak kosong
             if (!cart.Any())
             {
@@ -153,7 +153,7 @@ namespace kasir_kafe.Controllers
                     var product = await _context.Products
                         .AsNoTracking()
                         .FirstOrDefaultAsync(p => p.ProductId == cartItem.ProductId);
-                    
+
                     if (product == null) continue;
 
                     // Attach product agar tidak di-insert ulang
@@ -217,11 +217,5 @@ namespace kasir_kafe.Controllers
         {
             HttpContext.Session.SetString("Cart", JsonSerializer.Serialize(cart));
         }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
     }
 }

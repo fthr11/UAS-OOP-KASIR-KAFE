@@ -7,7 +7,7 @@ using kasirkafe.Interfaces;
 namespace kasir_kafe.Controllers 
 {
     [AdminOnly] // Hanya bisa diakses user dnegan roleadmin
-    public class AdminController : Controller // Mendefinisikan kelas controller yang mewarisi dari Controller
+    public class AdminController : Controller // Mendefinisikan kelas controller yang mewarisi dari Controller dari framework ASP core MVC
     {
         private readonly IRepository<Product> _productRepo; // field private untuk repository produk
         private readonly IWebHostEnvironment _webHost; // field private untuk mengakses wwwroot
