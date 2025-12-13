@@ -217,5 +217,11 @@ namespace kasir_kafe.Controllers
         {
             HttpContext.Session.SetString("Cart", JsonSerializer.Serialize(cart));
         }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
     }
 }
