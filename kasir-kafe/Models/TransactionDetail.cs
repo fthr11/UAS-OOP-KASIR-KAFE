@@ -8,7 +8,7 @@ public class TransactionDetail
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal Subtotal { get; set; }
-
-    public required virtual Transaction Transaction { get; set; }
-    public required virtual Product Product { get; set; }
+    
+    public virtual Transaction? Transaction { get; set; }
+    public virtual Product? Product { get; set; }
 }

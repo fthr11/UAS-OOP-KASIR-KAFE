@@ -70,6 +70,7 @@ CREATE TABLE `transactions` (
   `TransactionId` int(11) NOT NULL AUTO_INCREMENT,
   `TransactionCode` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `UserId` int(11) NOT NULL,
+  `CustomerName` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `TotalAmount` decimal(18,2) NOT NULL,
   `PaymentAmount` decimal(18,2) NOT NULL,
   `ChangeAmount` decimal(18,2) NOT NULL,

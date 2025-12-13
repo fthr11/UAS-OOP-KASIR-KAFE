@@ -1,5 +1,21 @@
 @model kasirkafe.Models.ViewModels.TransactionViewModel
 
+<!-- Pesan Success/Error -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <div class="card shadow-sm">
     <div class="card-header bg-light">
         <strong>Keranjang</strong>
@@ -19,14 +35,14 @@
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
                             <strong>@item.ProductName</strong><br />
-                            <small>Rp @item.Price.ToString("N0")</small>
+                            <small>Rp @item.Price.ToString(format: "N0")</small>
                         </div>
 
                         <div class="d-flex align-items-center gap-1">
                             <!-- Tambah -->
                             <form asp-action="AddToCart" method="post">
                                 <input type="hidden" name="productId" value="@item.ProductId" />
-                                <button class="btn btn-sm btn-success">+</button>
+                                <button type="submit" class="btn btn-sm btn-success">+</button>
                             </form>
 
                             <span class="mx-2">@item.Quantity</span>
@@ -34,7 +50,7 @@
                             <!-- Hapus -->
                             <form asp-action="ReduceFromCart" method="post">
                                 <input type="hidden" name="productId" value="@item.ProductId" />
-                                <button class="btn btn-sm btn-danger">-</button>
+                                <button type="submit" class="btn btn-sm btn-danger">-</button>
                             </form>
                         </div>
                     </li>
@@ -54,11 +70,21 @@
             <!-- BAYAR -->
             <form asp-action="ConfirmPayment" method="post">
                 <div class="mb-2">
+                    <label>Nama Customer (Opsional)</label>
+                    <input type="text"
+                        class="form-control"
+                        name="customerName"
+                        placeholder="Kosongkan jika tidak perlu" />
+                </div>
+
+                <div class="mb-2">
                     <label>Uang Dibayar</label>
                     <input type="number"
                         class="form-control"
                         name="paymentAmount"
-                        value="@Model.PaymentAmount" />
+                        value="@Model.PaymentAmount"
+                        required
+                        min="0" />
                 </div>
 
                 <div class="mb-2">
@@ -68,7 +94,7 @@
                     </span>
                 </div>
 
-                <button class="btn btn-success w-100">
+                <button type="submit" class="btn btn-success w-100">
                     Konfirmasi
                 </button>
             </form>

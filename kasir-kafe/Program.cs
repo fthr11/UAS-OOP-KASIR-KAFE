@@ -2,6 +2,8 @@ using kasirkafe.Data;
 using kasirkafe.Models.Interfaces;
 using kasirkafe.Models.Repositories;
 using kasirkafe.Models;
+using kasirkafe.Interfaces;
+using kasirkafe.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
@@ -18,9 +20,20 @@ builder.Services.AddDbContext<CafeDbContext>(options =>
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Tambahan dari branch lain
-builder.Services.AddSession();
+// Session configuration
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Dependency Injection - URUTAN PENTING!
+// 1. Repository Generic dulu
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+// 2. TransactionService (menggunakan IRepository)
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 var app = builder.Build();
 
@@ -35,6 +48,8 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.UseStaticFiles();
+
+// Session HARUS setelah UseRouting dan sebelum MapControllerRoute
 app.UseSession();
 
 app.MapControllerRoute(

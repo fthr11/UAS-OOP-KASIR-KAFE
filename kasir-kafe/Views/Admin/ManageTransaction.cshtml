@@ -1,0 +1,139 @@
+@model List<kasirkafe.Models.Transaction>
+
+@{
+    ViewData["Title"] = "Manage Transactions";
+}
+
+<div class="container mt-4">
+    <h2>Kelola Transaksi</h2>
+
+    <!-- Alert Success/Error -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <p class="text-muted">Belum ada transaksi</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kode Transaksi</th>
+                                <th>Tanggal</th>
+                                <th>Customer</th>
+                                <th>Kasir</th>
+                                <th>Total</th>
+                                <th>Bayar</th>
+                                <th>Kembalian</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var transaction in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@transaction.TransactionCode</strong>
+                                    </td>
+                                    <td>
+                                        @transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+                                    <td>
+                                        @(transaction.CustomerName ?? "-")
+                                    </td>
+                                    <td>
+                                        @(transaction.User?.Username ?? "-")
+                                    </td>
+                                    <td>
+                                        <strong class="text-primary">
+                                            Rp @transaction.TotalAmount.ToString("N0")
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        Rp @transaction.PaymentAmount.ToString("N0")
+                                    </td>
+                                    <td>
+                                        <span class="text-success">
+                                            Rp @transaction.ChangeAmount.ToString("N0")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <!-- Tombol Detail -->
+                                            <a asp-action="TransactionDetail" 
+                                               asp-route-id="@transaction.TransactionId"
+                                               class="btn btn-sm btn-info">
+                                                Detail
+                                            </a>
+                                            
+                                            <!-- Tombol Hapus -->
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-danger"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal@(transaction.TransactionId)">
+                                                Hapus
+                                            </button>
+                                        </div>
+
+                                        <!-- Modal Konfirmasi Hapus -->
+                                        <div class="modal fade" 
+                                             id="deleteModal@(transaction.TransactionId)" 
+                                             tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Konfirmasi Hapus</h5>
+                                                        <button type="button" 
+                                                                class="btn-close" 
+                                                                data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Apakah Anda yakin ingin menghapus transaksi 
+                                                        <strong>@transaction.TransactionCode</strong>?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" 
+                                                                class="btn btn-secondary" 
+                                                                data-bs-dismiss="modal">
+                                                            Batal
+                                                        </button>
+                                                        <form asp-action="DeleteTransaction" method="post">
+                                                            <input type="hidden" 
+                                                                   name="id" 
+                                                                   value="@transaction.TransactionId" />
+                                                            <button type="submit" 
+                                                                    class="btn btn-danger">
+                                                                Hapus
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

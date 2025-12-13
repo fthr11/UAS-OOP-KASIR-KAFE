@@ -1,33 +1,39 @@
 using Microsoft.AspNetCore.Mvc; 
 using kasirkafe.Filters;
 using kasirkafe.Models; 
-using kasirkafe.Models.Interfaces; 
+using kasirkafe.Models.Interfaces;
+using kasirkafe.Interfaces;
 
 namespace kasir_kafe.Controllers 
-{   
-    [AdminOnly] // Hanya bisa diakses user dnegan role admin
+{
+    [AdminOnly] // Hanya bisa diakses user dnegan roleadmin
     public class AdminController : Controller // Mendefinisikan kelas controller yang mewarisi dari Controller
     {
         private readonly IRepository<Product> _productRepo; // field private untuk repository produk
         private readonly IWebHostEnvironment _webHost; // field private untuk mengakses wwwroot
-        
-        public AdminController(IRepository<Product> productRepo, IWebHostEnvironment webHost) // Constructor AdminController
+
+        private readonly ITransactionService _transactionService;
+        public AdminController(
+            IRepository<Product> productRepo,
+            IWebHostEnvironment webHost,
+            ITransactionService transactionService)
         {
-            _productRepo = productRepo; // Inisialisasi IRepository untuk Product
-            _webHost = webHost; // Inisialisasi IWebHostEnvironment untuk akses ke wwwroot
+            _productRepo = productRepo;
+            _webHost = webHost;
+            _transactionService = transactionService;
         }
-        
+
         // Halaman Admin (Action Method)
-        public IActionResult Index() 
+        public IActionResult Index()
         {
-            return View(); 
+            return View();
         }
 
         // Menampilkan daftar produk (Action Method)
-        public IActionResult ManageProduct() 
+        public IActionResult ManageProduct()
         {
             var products = _productRepo.GetAll(); // GetAll digunakan untuk menampilkan semua data produk
-            return View(products); 
+            return View(products);
         }
 
         // Menampilkan form CreateProduct (Action Method - GET)
@@ -36,7 +42,7 @@ namespace kasir_kafe.Controllers
             ViewBag.ProductType = type; // ViewBag digunakan untuk mengirim tipe produk ke View
             return View(); // Mengembalikan View (CreateProduct.cshtml)
         }
-        
+
         [HttpPost] // Atribut untuk menangani request HTTP POST
         public async Task<IActionResult> CreateProduct(string productType, Product product, string? jenisMakanan, string? jenisMinuman) // Action method POST untuk membuat produk
         {
@@ -49,30 +55,30 @@ namespace kasir_kafe.Controllers
             // Validasi tipe produk dan buat instance yang sesuai
             if (productType == "FoodProduct")
             {
-                newProduct = new FoodProduct 
+                newProduct = new FoodProduct
                 {
-                    ProductName = product.ProductName, 
-                    Category = product.Category, 
-                    Price = product.Price, 
-                    CreatedAt = DateTime.Now, 
+                    ProductName = product.ProductName,
+                    Category = product.Category,
+                    Price = product.Price,
+                    CreatedAt = DateTime.Now,
                     JenisMakanan = jenisMakanan // Mengatur properti spesifik FoodProduct
                 };
             }
-            else if (productType == "DrinkProduct") 
+            else if (productType == "DrinkProduct")
             {
-                newProduct = new DrinkProduct 
+                newProduct = new DrinkProduct
                 {
-                    ProductName = product.ProductName, 
-                    Category = product.Category, 
-                    Price = product.Price, 
-                    CreatedAt = DateTime.Now, 
+                    ProductName = product.ProductName,
+                    Category = product.Category,
+                    Price = product.Price,
+                    CreatedAt = DateTime.Now,
                     JenisMinuman = jenisMinuman // Mengatur properti spesifik DrinkProduct
                 };
             }
             else
             {
                 newProduct = product; // Menggunakan instance Product yang telah dibuat
-                newProduct.CreatedAt = DateTime.Now; 
+                newProduct.CreatedAt = DateTime.Now;
             }
 
             // Upload gambar
@@ -80,25 +86,25 @@ namespace kasir_kafe.Controllers
             {
                 string uploadsFolder = Path.Combine(_webHost.WebRootPath, "images/products"); // Menentukan path folder upload di wwwroot
                 Directory.CreateDirectory(uploadsFolder); // kalau folder belum dibuat maka akan otomatis terbuat jika kita mengupload gambar
-                
+
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + product.ImageFile.FileName; // untuk membuat nama file yang berbeda dan auto generate
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName); // Menggabungkan path folder dan nama file
-                
+
                 using (var fileStream = new FileStream(filePath, FileMode.Create)) // Membuat FileStream untuk menulis file
                 {
                     await product.ImageFile.CopyToAsync(fileStream); // Menyalin konten file yang diupload 
                 }
-                
+
                 newProduct.Image = "/images/products/" + uniqueFileName; // Menyimpan path gambar local 
             }
 
             _productRepo.Add(newProduct); // Menambahkan produk baru ke repository
             _productRepo.Save(); // Menyimpan perubahan ke database
-            return RedirectToAction("ManageProduct"); 
+            return RedirectToAction("ManageProduct");
         }
-        
+
         // Action method untuk menampilkan form edit produk
-        public IActionResult EditProduct(int id) 
+        public IActionResult EditProduct(int id)
         {
             var product = _productRepo.GetById(id); // Mengambil produk berdasarkan ID
             if (product == null) return NotFound(); // Jika produk tidak ditemukan, kembalikan NotFound (HTTP 404)
@@ -109,7 +115,7 @@ namespace kasir_kafe.Controllers
         }
 
         [HttpPost] // Atribut untuk menangani request HTTP POST
-        public async Task<IActionResult> EditProduct(Product product, string? jenisMakanan, string? jenisMinuman) 
+        public async Task<IActionResult> EditProduct(Product product, string? jenisMakanan, string? jenisMinuman)
         {
             if (!ModelState.IsValid) // Memeriksa validitas model
                 return View(product); // Jika tidak valid, kembalikan View
@@ -181,6 +187,46 @@ namespace kasir_kafe.Controllers
             _productRepo.Delete(id); // Menghapus produk dari repository
             _productRepo.Save(); // Menyimpan perubahan ke database
             return RedirectToAction("ManageProduct"); // Mengarahkan pengguna kembali
+        }
+        
+        // ===============================
+        // TRANSAKSI
+        // ===============================
+        public async Task<IActionResult> ManageTransaction()
+        {
+            var transactions = await _transactionService.GetAllTransactionsAsync();
+            return View(transactions);
+        }
+
+        // Menampilkan detail transaksi
+        public async Task<IActionResult> TransactionDetail(int id)
+        {
+            var transaction = await _transactionService.GetTransactionByIdAsync(id);
+            if (transaction == null)
+                return NotFound();
+
+            return View(transaction);
+        }
+
+        // Hapus transaksi
+        [HttpPost]
+        public IActionResult DeleteTransaction(int id)
+        {
+            // Gunakan repository untuk hapus
+            var transactionRepo = HttpContext.RequestServices.GetService<IRepository<Transaction>>();
+            
+            if (transactionRepo != null)
+            {
+                transactionRepo.Delete(id);
+                transactionRepo.Save();
+                TempData["Success"] = "Transaksi berhasil dihapus!";
+            }
+            else
+            {
+                TempData["Error"] = "Gagal menghapus transaksi!";
+            }
+
+            return RedirectToAction("ManageTransaction");
         }
     }
 }

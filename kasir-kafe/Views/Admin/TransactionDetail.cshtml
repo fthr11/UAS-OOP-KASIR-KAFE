@@ -1,0 +1,155 @@
+@model kasirkafe.Models.Transaction
+
+@{
+    ViewData["Title"] = "Detail Transaksi";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Detail Transaksi</h2>
+        <a asp-action="ManageTransactions" class="btn btn-secondary">
+            Kembali
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Informasi Transaksi -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Informasi Transaksi</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Kode Transaksi:</th>
+                            <td><strong>@Model.TransactionCode</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal:</th>
+                            <td>@Model.TransactionDate.ToString("dddd, dd MMMM yyyy HH:mm")</td>
+                        </tr>
+                        <tr>
+                            <th>Kasir:</th>
+                            <td>@(Model.User?.Username ?? "-")</td>
+                        </tr>
+                        <tr>
+                            <th>Customer:</th>
+                            <td>@(Model.CustomerName ?? "-")</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ringkasan Pembayaran -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Ringkasan Pembayaran</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Total Belanja:</th>
+                            <td class="text-end">
+                                <strong class="text-primary">
+                                    Rp @Model.TotalAmount.ToString("N0")
+                                </strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Uang Dibayar:</th>
+                            <td class="text-end">
+                                Rp @Model.PaymentAmount.ToString("N0")
+                            </td>
+                        </tr>
+                        <tr class="border-top">
+                            <th>Kembalian:</th>
+                            <td class="text-end">
+                                <strong class="text-success">
+                                    Rp @Model.ChangeAmount.ToString("N0")
+                                </strong>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Item Belanja -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Detail Item Belanja</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>No</th>
+                            <th>Produk</th>
+                            <th>Harga Satuan</th>
+                            <th>Jumlah</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int no = 1;
+                            foreach (var detail in Model.TransactionDetails)
+                            {
+                                <tr>
+                                    <td>@no</td>
+                                    <td>
+                                        <strong>@(detail.Product?.ProductName ?? "Produk tidak ditemukan")</strong>
+                                    </td>
+                                    <td>Rp @detail.UnitPrice.ToString("N0")</td>
+                                    <td>@detail.Quantity</td>
+                                    <td>
+                                        <strong>Rp @detail.Subtotal.ToString("N0")</strong>
+                                    </td>
+                                </tr>
+                                no++;
+                            }
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                            <td>
+                                <strong class="text-primary">
+                                    Rp @Model.TotalAmount.ToString("N0")
+                                </strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tombol Print (Opsional) -->
+    <div class="text-center mt-3 mb-5">
+        <button onclick="window.print()" class="btn btn-primary">
+            Print Struk
+        </button>
+        <a asp-action="ManageTransaction" class="btn btn-secondary">
+            Kembali
+        </a>
+    </div>
+</div>
+
+<!-- CSS untuk print -->
+<style>
+    @@media print {
+        .btn, .card-header, nav, footer {
+            display: none !important;
+        }
+        .card {
+            border: none;
+            box-shadow: none;
+        }
+    }
+</style>
