@@ -1,33 +1,32 @@
-﻿@model List<kasirkafe.Models.Product>
-
-<div class="container mt-4">
-    <h2 class="mb-4">Menu Kasir Kafe</h2>
-
-    @if (Model == null || !Model.Any())
-    {
-        <div class="alert alert-warning">
-            Tidak ada produk di database.
-        </div>
-    }
-    else
-    {
+﻿<div class="row">
+    <!-- MENU KIRI -->
+    <div class="col-md-8">
         <div class="row">
-            @foreach (var item in Model)
+            @foreach (var item in Model.AvailableProducts)
             {
-                <div class="col-md-3 mb-3">
+                <div class="col-md-4 mb-3">
                     <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5>@item.ProductName</h5>
-                            <p class="text-muted">@item.Category</p>
-                            <p><strong>Rp @item.Price.ToString("N0")</strong></p>
+                        <div class="card-body text-center">
+                            <h6 class="card-title">@item.ProductName</h6>
+                            <p class="text-muted mb-2">
+                                Rp @item.Price.ToString("N0")
+                            </p>
 
-                            <button class="btn btn-primary btn-sm w-100">
-                                Tambah Pesanan
-                            </button>
+                            <form asp-action="AddToCart" method="post">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <button class="btn btn-primary btn-sm w-100">
+                                    Tambah
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
             }
         </div>
-    }
+    </div>
+
+    <!-- KERANJANG KANAN -->
+    <div class="col-md-4">
+        <partial name="_Cart" model="Model" />
+    </div>
 </div>

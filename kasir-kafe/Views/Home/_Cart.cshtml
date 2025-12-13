@@ -1,0 +1,77 @@
+@model kasirkafe.Models.ViewModels.TransactionViewModel
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <strong>Keranjang</strong>
+    </div>
+
+    <div class="card-body">
+
+        @if (!Model.CartItems.Any())
+        {
+            <p class="text-muted">Keranjang kosong</p>
+        }
+        else
+        {
+            <ul class="list-group mb-3">
+                @foreach (var item in Model.CartItems)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@item.ProductName</strong><br />
+                            <small>Rp @item.Price.ToString("N0")</small>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-1">
+                            <!-- Tambah -->
+                            <form asp-action="AddToCart" method="post">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <button class="btn btn-sm btn-success">+</button>
+                            </form>
+
+                            <span class="mx-2">@item.Quantity</span>
+
+                            <!-- Hapus -->
+                            <form asp-action="RemoveFromCart" method="post">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <button class="btn btn-sm btn-danger">-</button>
+                            </form>
+                        </div>
+                    </li>
+                }
+            </ul>
+
+            <!-- TOTAL -->
+            <div class="mb-2">
+                <strong>Total:</strong>
+                <span class="float-end">
+                    Rp @Model.TotalAmount.ToString("N0")
+                </span>
+            </div>
+
+            <hr />
+
+            <!-- BAYAR -->
+            <form asp-action="ConfirmPayment" method="post">
+                <div class="mb-2">
+                    <label>Uang Dibayar</label>
+                    <input type="number"
+                        class="form-control"
+                        name="paymentAmount"
+                        value="@Model.PaymentAmount" />
+                </div>
+
+                <div class="mb-2">
+                    <strong>Kembalian:</strong>
+                    <span class="float-end text-success">
+                        Rp @Model.ChangeAmount.ToString("N0")
+                    </span>
+                </div>
+
+                <button class="btn btn-success w-100">
+                    Konfirmasi
+                </button>
+            </form>
+        }
+    </div>
+</div>

@@ -1,45 +1,119 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using kasirkafe.ViewModels;
 using kasirkafe.Data;
+using kasirkafe.Models.ViewModels;
 using kasirkafe.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace kasir_kafe.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly CafeDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger, CafeDbContext context)
+        public HomeController(CafeDbContext context)
         {
-            _logger = logger;
             _context = context;
         }
 
-        // === HALAMAN HOME / KASIR ===
+        // ===============================
+        // HALAMAN KASIR
+        // ===============================
         public async Task<IActionResult> Index()
         {
-            // Ambil semua produk aktif dengan stock > 0
-            var products = await _context.Products.ToListAsync();
-
-
-            return View(products); // kirim ke Index.cshtml
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel
+            var vm = new TransactionViewModel
             {
-                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
-            });
+                AvailableProducts = await _context.Products.ToListAsync(),
+                CartItems = GetCart(),
+                PaymentAmount = TempData["PaymentAmount"] != null
+                    ? decimal.Parse(TempData["PaymentAmount"]!.ToString()!)
+                    : 0
+            };
+
+            return View(vm);
+        }
+
+        // ===============================
+        // TAMBAH ITEM
+        // ===============================
+        [HttpPost]
+        public IActionResult AddToCart(int productId)
+        {
+            var cart = GetCart();
+            var product = _context.Products.Find(productId);
+
+            if (product == null)
+                return RedirectToAction("Index");
+
+            var item = cart.FirstOrDefault(c => c.ProductId == productId);
+
+            if (item == null)
+            {
+                cart.Add(new CartItem
+                {
+                    ProductId = product.ProductId,
+                    ProductName = product.ProductName,
+                    Price = product.Price,
+                    Quantity = 1,
+                    Subtotal = product.Price
+                });
+            }
+            else
+            {
+                item.Quantity++;
+                item.Subtotal = item.Quantity * item.Price;
+            }
+
+            SaveCart(cart);
+            return RedirectToAction("Index");
+        }
+
+        // ===============================
+        // KURANG / HAPUS ITEM
+        // ===============================
+        [HttpPost]
+        public IActionResult ReduceFromCart(int productId)
+        {
+            var cart = GetCart();
+            var item = cart.FirstOrDefault(c => c.ProductId == productId);
+
+            if (item != null)
+            {
+                item.Quantity--;
+                item.Subtotal = item.Quantity * item.Price;
+
+                if (item.Quantity <= 0)
+                    cart.Remove(item);
+            }
+
+            SaveCart(cart);
+            return RedirectToAction("Index");
+        }
+
+        // ===============================
+        // KONFIRMASI PEMBAYARAN
+        // ===============================
+        [HttpPost]
+        public IActionResult ConfirmPayment(decimal paymentAmount)
+        {
+            TempData["PaymentAmount"] = paymentAmount.ToString();
+            return RedirectToAction("Index");
+        }
+
+        // ===============================
+        // SESSION CART
+        // ===============================
+        private List<CartItem> GetCart()
+        {
+            var json = HttpContext.Session.GetString("Cart");
+            return string.IsNullOrEmpty(json)
+                ? new List<CartItem>()
+                : JsonSerializer.Deserialize<List<CartItem>>(json)!;
+        }
+
+        private void SaveCart(List<CartItem> cart)
+        {
+            HttpContext.Session.SetString("Cart", JsonSerializer.Serialize(cart));
         }
     }
 }
