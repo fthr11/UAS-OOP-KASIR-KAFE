@@ -4,12 +4,14 @@ using kasirkafe.Models.ViewModels;
 using kasirkafe.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using kasirkafe.Models.Interfaces;
 
 namespace kasir_kafe.Controllers
 {
     public class HomeController : Controller
     {
         private readonly CafeDbContext _context;
+
 
         public HomeController(CafeDbContext context)
         {

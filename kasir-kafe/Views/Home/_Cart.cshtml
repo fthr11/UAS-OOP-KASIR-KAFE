@@ -32,7 +32,7 @@
                             <span class="mx-2">@item.Quantity</span>
 
                             <!-- Hapus -->
-                            <form asp-action="RemoveFromCart" method="post">
+                            <form asp-action="ReduceFromCart" method="post">
                                 <input type="hidden" name="productId" value="@item.ProductId" />
                                 <button class="btn btn-sm btn-danger">-</button>
                             </form>

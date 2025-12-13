@@ -5,7 +5,7 @@ using kasirkafe.Models.Interfaces;
 
 namespace kasir_kafe.Controllers 
 {   
-    [AdminOnly] // Hanya bisa diakses admin
+    [AdminOnly] // Hanya bisa diakses user dnegan role admin
     public class AdminController : Controller // Mendefinisikan kelas controller yang mewarisi dari Controller
     {
         private readonly IRepository<Product> _productRepo; // field private untuk repository produk
