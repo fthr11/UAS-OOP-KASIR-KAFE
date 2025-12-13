@@ -23,20 +23,20 @@ namespace kasir_kafe.Controllers
             _transactionService = transactionService;
         }
 
-        // Halaman Admin (Action Method)
+        // Halaman Admin 
         public IActionResult Index()
         {
             return View();
         }
 
-        // Menampilkan daftar produk (Action Method)
+        // Menampilkan daftar produk 
         public IActionResult ManageProduct()
         {
             var products = _productRepo.GetAll(); // GetAll digunakan untuk menampilkan semua data produk
             return View(products);
         }
 
-        // Menampilkan form CreateProduct (Action Method - GET)
+        // Menampilkan form CreateProduct 
         public IActionResult CreateProduct(string? type = "Product") // Parameter type untuk menentukan jenis produk 
         {
             ViewBag.ProductType = type; // ViewBag digunakan untuk mengirim tipe produk ke View
@@ -107,14 +107,14 @@ namespace kasir_kafe.Controllers
         public IActionResult EditProduct(int id)
         {
             var product = _productRepo.GetById(id); // Mengambil produk berdasarkan ID
-            if (product == null) return NotFound(); // Jika produk tidak ditemukan, kembalikan NotFound (HTTP 404)
+            if (product == null) return NotFound(); // Jika produk tidak ditemukan
 
             // Pass tipe product ke view
             ViewBag.ProductType = product.GetType().Name; // Menyimpan nama tipe produk ke ViewBag
             return View(product); // Mengirim produk ke View (EditProduct.cshtml)
         }
 
-        [HttpPost] // Atribut untuk menangani request HTTP POST
+        [HttpPost] 
         public async Task<IActionResult> EditProduct(Product product, string? jenisMakanan, string? jenisMinuman)
         {
             if (!ModelState.IsValid) // Memeriksa validitas model
